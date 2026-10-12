@@ -1,0 +1,9 @@
+# Tầng sự kiện, MVP. Xem docs/SPEC.md §5.
+run_name: mvp_event_eyes
+seed: [0, 1, 2]
+dataset: {name: dmd, root: data/dmd, fallback: nthu_ddd}
+eye_model: {landmarks: mediapipe, backbone: mobilenetv3_small, input: 64x32}
+events: {thr: 0.5, mining_fill_gap_s: 0.0, report_fill_gap_s: [0.0, 0.2], context_s: 2.0, iou_thr: 0.5}
+al: {init_frac: 0.02, budget_events: 50, rounds: 8}
+strategies: [random, mean_frame_uncertainty, hardmine_event]
+hardmine_event: {signals: [frame_uncertainty, threshold_proximity, fragmentation], lam: 0.001}

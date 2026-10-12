@@ -1,0 +1,12 @@
+# Tầng clip, MVP. Xem docs/SPEC.md §7.
+run_name: mvp_clip_driveact
+seed: [0, 1, 2]
+dataset: {name: driveact, root: data/driveact, view: nir_front_top, split: [0, 1, 2]}
+windows: {length_s: 2.0, stride_s: 1.0, fps_sample: 8, min_label_frac: 0.6}
+dedup: {phash_tau: 6, semdedup_eps: 0.02}
+backbone: {name: vjepa2_vitl, batch_size: 16, fp16: true}
+deidentify: {rank: 8, class_balanced: false}
+head: {members: 5, hidden: 512, dropout: 0.5, lr: 0.001, weight_decay: 0.01, max_epochs: 100}
+al: {init_frac: 0.01, budget_frac: 0.005, rounds: 10}
+strategies: [random, entropy, margin, bald, coreset, typiclust, probcover, dropquery, hardmine]
+hardmine: {signals: [margin, bald, temporal, rarity], alpha: 10, min_gap_s: 10, max_class_frac: 0.25, lam: 0.001}
