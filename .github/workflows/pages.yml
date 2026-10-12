@@ -23,9 +23,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      # demo/index.html là phần thân trang (dùng chung với bản xem trước trong Claude);
+      # bước này bọc nó thành một tài liệu HTML đầy đủ cho GitHub Pages.
+      - name: Build site
+        run: |
+          mkdir -p _site
+          {
+            printf '<!doctype html>\n<html lang="vi">\n<head>\n<meta charset="utf-8">\n'
+            printf '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+            printf '</head>\n<body>\n'
+            cat demo/index.html
+            printf '\n</body>\n</html>\n'
+          } > _site/index.html
+          cp demo/data.js _site/
+          test -s _site/index.html && test -s _site/data.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: demo
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
