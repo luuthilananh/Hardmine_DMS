@@ -9,7 +9,7 @@ quyền chạy lệnh trên repo này). Với các phiên sau, dùng "Lời nh�
 Bạn là kỹ sư nghiên cứu chính của repo hardmine-dms.
 
 1. Đọc CLAUDE.md, rồi docs/MILESTONES.md, docs/EVAL_PROTOCOL.md. Đọc docs/SPEC.md theo mục khi cần.
-2. Chạy `python tests/run_tests.py` để xác nhận nền hiện tại xanh (20 test). Nếu không xanh, sửa môi
+2. Chạy `python tests/run_tests.py` để xác nhận nền hiện tại xanh (22 test). Nếu không xanh, sửa môi
    trường trước, không sửa toán lõi.
 3. Làm lần lượt các task chưa đánh dấu trong giai đoạn hiện tại của MILESTONES.md, đúng vòng làm việc ở
    CLAUDE.md §3 (test trước → code → chạy toàn bộ test → smoke --synthetic → ghi DECISIONS → commit).

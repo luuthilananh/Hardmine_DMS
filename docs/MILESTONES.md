@@ -3,14 +3,14 @@
 Quy ước: mỗi task có **ID**, **file chính**, **nghiệm thu** (điều kiện kiểm chứng được bằng lệnh).
 Đánh dấu `[x]` khi xong và commit. Không bắt đầu giai đoạn mới khi cổng trước chưa qua.
 
-Trạng thái hiện tại: **P0 đang làm** (phần toán lõi đã có, xem CLAUDE.md mục 2).
+Trạng thái hiện tại: **P0 đang làm** (toán lõi, CI, demo tổng hợp, trích đặc trưng đã có; xem CLAUDE.md mục 2).
 
 ---
 
 ## P0 — Nền móng (tuần 1)
 
 - [ ] **P0.1 Đóng gói.** `pyproject.toml` cài được bằng `pip install -e ".[dev]"`; `import hardmine` chạy.
-  Nghiệm thu: `python tests/run_tests.py` → 20+ passed, 0 failed.
+  Nghiệm thu: CI xanh trên 3 phiên bản Python (đã có `ci.yml`; chỉ cần xác nhận lần chạy đầu trên GitHub).
 - [ ] **P0.2 Config.** `src/hardmine/config.py`: dataclass đọc YAML (xem SPEC §7). Test đọc `configs/mvp_clip.yaml`.
 - [ ] **P0.3 Ghi kết quả.** `src/hardmine/runlog.py`: tạo `results/<run_id>/`, ghi config, meta (git commit, seed,
   thời gian, GPU), CSV theo vòng. Test trên thư mục tạm.
@@ -37,7 +37,7 @@ kế hoạch mục 7) trên đĩa. Nếu thiếu dữ liệu: dừng, báo ngư�
 - [ ] **P1.4 pHash.** `dedup/phash.py`: pHash 64-bit tự cài (DCT 32×32 → 8×8), khoảng cách Hamming, nhóm
   trùng trong cùng phiên. Test: ảnh dịch 1 pixel có Hamming ≤ 6; ảnh khác hẳn > 20.
 - [ ] **P1.5 Trích đặc trưng.** `features/extract.py` + `scripts/extract_features.py`: backbone cấu hình được,
-  ghi `cache/features/<dataset>/<backbone>.npy` (float16) + `index.parquet`. Chạy một lần, có thể tiếp tục
+  ghi `cache/features/<dataset>/<backbone>.npy` (float16) + `index.csv` (đã cài trong `features/extract.py`; cần nối với bảng cửa sổ của Drive&Act). Chạy một lần, có thể tiếp tục
   khi bị ngắt (resume theo chỉ số đã ghi). Đo thông lượng (cửa sổ/giây) trên 1.000 cửa sổ, ghi DECISIONS.md.
 - [ ] **P1.6 Chọn backbone.** So sánh 2–3 backbone bằng linear probe trên val (SPEC §4). Chọn một, ghi lý do.
 - [ ] **P1.7 SemDeDup.** `dedup/semdedup.py`: k-means trên embedding, loại cặp cosine ≥ 1 − ε trong cụm.

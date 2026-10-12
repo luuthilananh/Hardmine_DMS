@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Nếu bạn dùng phần mềm này, vui lòng trích dẫn như sau."
+title: "HardMine-DMS: Temporal hard-case mining for in-cabin driver monitoring"
+authors:
+  - family-names: Luu
+    given-names: Thi Lan Anh
+repository-code: "https://github.com/luuthilananh/Hardmine_DMS"
+license: MIT
+version: 0.1.0.dev0
+date-released: 2026-10-12
+keywords: [driver monitoring, active learning, hard example mining, euro ncap]

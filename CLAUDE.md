@@ -26,7 +26,7 @@ Tài liệu nguồn (đọc khi cần, theo thứ tự ưu tiên khi mâu thuẫ
 
 ## 2. Trạng thái khởi đầu
 
-Phần toán lõi đã được viết và kiểm chứng (20 test xanh):
+Phần toán lõi đã được viết và kiểm chứng (22 test xanh; CI chạy trên Python 3.10–3.12):
 
 - `src/hardmine/signals/core.py` — S1 margin, S2 BALD, S3 thầy–trò, S4 bất ổn định thời gian,
   S5 đa góc, S6 độ hiếm kNN, S7 độ hiếm từ khoá.
@@ -37,7 +37,19 @@ Phần toán lõi đã được viết và kiểm chứng (20 test xanh):
 - `src/hardmine/eval/metrics.py` — HHR@K, Lift@K, AUROC lỗi, AUBC, recall lớp đuôi, t-test, bootstrap theo nhóm.
 - `src/hardmine/synthetic/generators.py` — dữ liệu tổng hợp có ca khó biết trước.
 
-Các module này là **nền đã kiểm chứng**. Bạn được phép mở rộng; chỉ được sửa hành vi hiện có
+Ngoài ra đã có (kiểm thử một phần):
+
+- `src/hardmine/al/simple_loop.py` — vòng mô phỏng rút gọn trên CPU (logistic head, 4 chiến lược). Dùng làm khung
+  tham chiếu khi viết `al/loop.py` đầy đủ ở P2.2.
+- `src/hardmine/features/extract.py` + `scripts/extract_features.py` — trích embedding HF (VideoMAE, V-JEPA 2,
+  SigLIP 2), resume được. Phần đọc video đã chạy thử; phần GPU được kiểm tra bởi workflow `extract-smoke.yml`
+  với model tí hon và trên Kaggle (`notebooks/kaggle_hardmine.ipynb`).
+- `scripts/demo_synthetic.py` — demo đầu-cuối, sinh `results/synthetic_demo/` và `demo/data.js`.
+- `demo/index.html` — trang demo tương tác (GitHub Pages). Công thức sự kiện trong JS được kiểm tra khớp
+  tuyệt đối với Python; nếu sửa `events/core.py`, sửa cả JS và chạy lại kiểm tra đối chiếu.
+- `.github/workflows/` — `ci.yml` (test + demo), `extract-smoke.yml`, `pages.yml`.
+
+Các module toán lõi là **nền đã kiểm chứng**. Bạn được phép mở rộng; chỉ được sửa hành vi hiện có
 khi có test chứng minh nó sai, và phải ghi lý do vào `docs/DECISIONS.md`.
 
 Phần còn trống, bạn xây: `data/`, `dedup/`, `models/`, `al/`, `scripts/`, `configs/`, README, báo cáo.

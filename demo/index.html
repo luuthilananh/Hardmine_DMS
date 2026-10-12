@@ -1,0 +1,409 @@
+<title>HardMine-DMS Demo</title>
+<meta name="description" content="Demo tương tác: khai phá ca khó cho video giám sát tài xế trên dữ liệu tổng hợp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: bảng điều khiển kiểu màn hình camera hồng ngoại; đầu trang mỏng, ba thẻ, mỗi thẻ là một công cụ */
+:root {
+  --bg: #eceff2; --panel: #f8f9fa; --fg: #15191e; --muted: #59636e; --rule: #cbd2d9;
+  --accent: #c0362c; --accent-soft: rgba(192, 54, 44, .12);
+  --c-blink: #8a96a3; --c-micro: #c9851a; --c-buffer: #5f7d95; --c-sleep: #c0362c; --c-unresp: #7d3c98;
+  --gt: #2f6f4f; --line: #24303c;
+  --font-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1114; --panel: #151a1f; --fg: #e4e8ec; --muted: #9aa5b1; --rule: #2a323b;
+    --accent: #ff6a5c; --accent-soft: rgba(255, 106, 92, .16);
+    --c-blink: #6c7783; --c-micro: #e3a33a; --c-buffer: #7f9db5; --c-sleep: #ff6a5c; --c-unresp: #b67ad1;
+    --gt: #5fbf8c; --line: #c9d3dc; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1114; --panel: #151a1f; --fg: #e4e8ec; --muted: #9aa5b1; --rule: #2a323b;
+  --accent: #ff6a5c; --accent-soft: rgba(255, 106, 92, .16);
+  --c-blink: #6c7783; --c-micro: #e3a33a; --c-buffer: #7f9db5; --c-sleep: #ff6a5c; --c-unresp: #b67ad1;
+  --gt: #5fbf8c; --line: #c9d3dc; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--font-ui); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; display: grid; gap: var(--s5); }
+header { display: grid; gap: var(--s2); }
+.eyebrow { font: 500 12px var(--font-data); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(26px, 4vw, 34px); line-height: 1.15; margin: 0; font-weight: 600; text-wrap: balance; }
+.lede { margin: 0; max-width: 68ch; color: var(--muted); }
+.notice { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: var(--s2) var(--s3); max-width: 80ch; font-size: 14px; }
+.links { display: flex; flex-wrap: wrap; gap: var(--s3); font-size: 14px; }
+a { color: var(--accent); }
+nav[role="tablist"] { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--rule); }
+nav button { font: 500 14px var(--font-ui); color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; padding: var(--s2) var(--s4); cursor: pointer; margin-bottom: -1px; }
+nav button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+nav button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+section[role="tabpanel"] { display: grid; gap: var(--s4); }
+.intro { margin: 0; max-width: 72ch; }
+.controls { display: flex; flex-wrap: wrap; gap: var(--s4) var(--s5); align-items: end; }
+.ctl { display: grid; gap: 2px; font-size: 13px; color: var(--muted); }
+.ctl output { font: 500 13px var(--font-data); color: var(--fg); }
+.ctl input[type="range"] { width: 180px; accent-color: var(--accent); }
+select { font: 14px var(--font-ui); padding: 4px 8px; background: var(--panel); color: var(--fg); border: 1px solid var(--rule); border-radius: 4px; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.seg button { font: 13px var(--font-ui); padding: 4px 10px; background: var(--panel); color: var(--muted); border: 0; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: var(--s3); min-width: 0; }
+.panel h3 { margin: 0 0 var(--s2); font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+canvas { display: block; width: 100%; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s3); }
+.metric { display: grid; gap: 2px; }
+.metric .k { font-size: 12px; color: var(--muted); }
+.metric .v { font: 500 22px var(--font-data); font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--s4); }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; }
+td.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; text-align: right; }
+tbody tr { cursor: pointer; }
+tbody tr:hover, tbody tr.active { background: var(--accent-soft); }
+.pill { display: inline-block; font: 500 11px var(--font-data); padding: 1px 6px; border-radius: 999px; color: #fff; }
+.why { color: var(--muted); }
+.caption { font-size: 13px; color: var(--muted); margin: 0; max-width: 80ch; }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: var(--s3); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Driver Monitoring · hard-case mining</div>
+    <h1>HardMine-DMS</h1>
+    <p class="lede">Từ nhiều giờ video cabin chưa gán nhãn, chọn ra đúng những đoạn mà model đang sai, ở đúng tầng thời gian của trạng thái tài xế.</p>
+    <p class="notice">Trang này chạy trên <strong>dữ liệu tổng hợp</strong> để minh hoạ cơ chế. Các con số không phải hiệu năng trên dữ liệu thật.</p>
+    <div class="links">
+      <a href="https://github.com/luuthilananh/Hardmine_DMS" target="_blank" rel="noopener">Mã nguồn trên GitHub</a>
+      <span>Ngưỡng sự kiện theo Euro NCAP 2026: ngủ gật 1–2 s · ngủ ≥ 3 s · mất phản ứng ≥ 6 s</span>
+    </div>
+  </header>
+
+  <nav role="tablist" aria-label="Các phần demo">
+    <button role="tab" id="tab-events" aria-controls="p-events" aria-selected="true">Sự kiện nhắm mắt</button>
+    <button role="tab" id="tab-emb" aria-controls="p-emb" aria-selected="false">Khử danh tính tài xế</button>
+    <button role="tab" id="tab-curves" aria-controls="p-curves" aria-selected="false">Hiệu quả nhãn</button>
+  </nav>
+
+  <!-- THẺ 1 -->
+  <section role="tabpanel" id="p-events" aria-labelledby="tab-events">
+    <p class="intro">Model mắt cho xác suất nhắm q(t) mỗi frame. Các frame vượt ngưỡng được ghép thành sự kiện và xếp lớp theo thời lượng. Ca khó nhất là sự kiện có thời lượng <em>sát ngưỡng</em> phân lớp, và một lần ngủ bị khe ngắn <em>cắt vụn</em> thành hai lần ngủ gật.</p>
+    <div class="controls">
+      <label class="ctl" for="thr">Ngưỡng nhắm mắt <output id="thrOut">0.50</output>
+        <input id="thr" type="range" min="0.3" max="0.7" step="0.05" value="0.5"></label>
+      <label class="ctl" for="gap">Lấp khe ngắn (hậu xử lý) <output id="gapOut">0.00 s</output>
+        <input id="gap" type="range" min="0" max="0.4" step="0.05" value="0"></label>
+    </div>
+    <div class="metrics" id="evMetrics"></div>
+    <div class="panel">
+      <h3>Toàn bộ 20 phút — bấm để xem chi tiết</h3>
+      <canvas id="overview" height="44" aria-label="Dòng thời gian toàn bộ sự kiện"></canvas>
+      <h3 style="margin-top:12px" id="detailTitle">Chi tiết</h3>
+      <canvas id="detail" height="220" aria-label="Xác suất nhắm mắt trong cửa sổ chi tiết"></canvas>
+      <div class="legend" style="margin-top:8px">
+        <span><i style="background:var(--gt)"></i>Sự kiện thật</span>
+        <span><i style="background:var(--c-blink)"></i>Chớp mắt</span>
+        <span><i style="background:var(--c-micro)"></i>Ngủ gật</span>
+        <span><i style="background:var(--c-buffer)"></i>Vùng đệm 2–3 s</span>
+        <span><i style="background:var(--c-sleep)"></i>Ngủ</span>
+        <span><i style="background:var(--c-unresp)"></i>Mất phản ứng</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>10 sự kiện engine sẽ gửi đi gán nhãn đầu tiên</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th>#</th><th>Thời điểm</th><th class="num">Thời lượng</th><th>Lớp dự đoán</th><th>Khớp thật?</th><th class="num">Sát ngưỡng</th><th class="num">Cắt vụn</th><th class="num">Điểm khó</th><th>Lý do chính</th></tr></thead>
+        <tbody id="evTable"></tbody>
+      </table></div>
+    </div>
+    <p class="caption" id="evCaption"></p>
+  </section>
+
+  <!-- THẺ 2 -->
+  <section role="tabpanel" id="p-emb" aria-labelledby="tab-emb" hidden>
+    <p class="intro">Embedding của ảnh cabin thường gom cụm theo <em>ngoại hình người lái</em> thay vì theo hành vi. Engine chiếu bỏ các hướng danh tính trước khi phân cụm và đo độ hiếm. Mỗi điểm là một cửa sổ 2 giây, chiếu xuống 2 chiều bằng PCA.</p>
+    <div class="controls">
+      <div class="ctl">Tô màu theo
+        <div class="seg" role="group" aria-label="Tô màu theo">
+          <button id="byDriver" aria-pressed="true">Tài xế</button>
+          <button id="byClass" aria-pressed="false">Hành vi</button>
+        </div></div>
+      <label class="ctl" for="strat">Mẫu được chọn ở vòng 1
+        <select id="strat">
+          <option value="none">Không hiển thị</option>
+          <option value="random">random</option>
+          <option value="entropy">entropy</option>
+          <option value="margin_diverse">margin_diverse</option>
+          <option value="hardmine" selected>hardmine</option>
+        </select></label>
+    </div>
+    <div class="two">
+      <div class="panel"><h3>Embedding gốc</h3><canvas id="embRaw" height="320" aria-label="Embedding gốc"></canvas></div>
+      <div class="panel"><h3>Sau khử danh tính</h3><canvas id="embDeid" height="320" aria-label="Embedding sau khử danh tính"></canvas></div>
+    </div>
+    <p class="caption" id="embCaption"></p>
+  </section>
+
+  <!-- THẺ 3 -->
+  <section role="tabpanel" id="p-curves" aria-labelledby="tab-curves" hidden>
+    <p class="intro">Mô phỏng gán nhãn: mỗi vòng chọn 30 cửa sổ, huấn luyện lại, đo macro-F1 trên tài xế chưa từng thấy. Trung bình 3 seed. Trên dữ liệu tổng hợp các chiến lược chưa tách bạch rõ; câu trả lời thật nằm ở cổng G3 trên Drive&amp;Act.</p>
+    <div class="panel"><h3>Macro-F1 theo số nhãn</h3><canvas id="curve" height="300" aria-label="Đường cong macro-F1 theo số nhãn"></canvas>
+      <div class="legend" id="curveLegend" style="margin-top:8px"></div></div>
+    <div class="panel"><h3>Mining sự kiện: tỷ lệ lỗi trong 20 sự kiện được chọn</h3><canvas id="bars" height="140" aria-label="So sánh tỷ lệ chọn trúng lỗi"></canvas>
+      <p class="caption">Bộ sinh dữ liệu tạo đúng loại lỗi mà tín hiệu sát ngưỡng và cắt vụn nhắm tới, nên 100% ở đây là kiểm chứng cơ chế, không phải hiệu năng.</p></div>
+  </section>
+
+  <footer>HardMine-DMS · mã nguồn MIT · dữ liệu demo sinh bằng <code>scripts/demo_synthetic.py</code></footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+(() => {
+const D = window.DEMO_DATA;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const CLS = ["Chớp mắt", "Ngủ gật", "Vùng đệm", "Ngủ", "Mất phản ứng"];
+const CLS_VAR = ["--c-blink", "--c-micro", "--c-buffer", "--c-sleep", "--c-unresp"];
+const TH = [1, 2, 3, 6];
+const fps = D.events.fps, q = D.events.q, T = q.length;
+
+/* ---------- tầng sự kiện: cùng công thức với src/hardmine/events/core.py ---------- */
+const clsOf = d => TH.filter(t => d >= t).length;
+function extract(thr, gapS) {
+  let runs = [], s = -1;
+  for (let i = 0; i <= T; i++) {
+    const c = i < T && q[i] >= thr;
+    if (c && s < 0) s = i;
+    if (!c && s >= 0) { runs.push([s, i]); s = -1; }
+  }
+  if (gapS > 0 && runs.length) {
+    const mg = Math.round(gapS * fps), m = [runs[0].slice()];
+    for (const [a, b] of runs.slice(1)) { if (a - m[m.length - 1][1] <= mg) m[m.length - 1][1] = b; else m.push([a, b]); }
+    runs = m;
+  }
+  return runs.map(([a, b]) => ({ s: a, e: b, d: (b - a) / fps, c: clsOf((b - a) / fps) }));
+}
+function uncertainAround(c) { let n = 0; for (let i = Math.max(c - 2, 0); i <= Math.min(c + 2, T - 1); i++) if (q[i] >= .2 && q[i] <= .8) n++; return n; }
+function proximity(ev) {
+  const sig = (uncertainAround(ev.s) + uncertainAround(ev.e - 1) + 1) / fps;
+  return Math.exp(-Math.min(...TH.map(t => Math.abs(ev.d - t))) / sig);
+}
+function fragScores(evs) {
+  const out = evs.map(() => 0);
+  for (let i = 0; i < evs.length - 1; i++) {
+    const a = evs[i], b = evs[i + 1], g = b.s - a.e;
+    if (g <= 0 || g / fps > .2) continue;
+    if (clsOf((b.e - a.s) / fps) !== Math.max(a.c, b.c)) {
+      let m = 0; for (let k = a.e; k < b.s; k++) m += q[k]; m /= g;
+      out[i] = Math.max(out[i], m); out[i + 1] = Math.max(out[i + 1], m);
+    }
+  }
+  return out;
+}
+function frameUnc(ev) { let m = 0; for (let k = ev.s; k < ev.e; k++) m += 1 - Math.abs(2 * q[k] - 1); return m / (ev.e - ev.s); }
+function pct(arr) { // hạng phần trăm trung bình, giống scipy rankdata('average')
+  const n = arr.length; if (n <= 1) return arr.map(() => 0);
+  const idx = arr.map((v, i) => [v, i]).sort((x, y) => x[0] - y[0]), r = new Array(n);
+  for (let i = 0; i < n;) { let j = i; while (j + 1 < n && idx[j + 1][0] === idx[i][0]) j++; const avg = (i + j) / 2; for (let k = i; k <= j; k++) r[idx[k][1]] = avg / (n - 1); i = j + 1; }
+  return r;
+}
+const GT = D.events.gt.map(([s, e]) => ({ s, e, d: (e - s) / fps, c: clsOf((e - s) / fps) }));
+function match(pred, gt) {
+  const pairs = [];
+  pred.forEach((p, i) => gt.forEach((g, j) => { const inter = Math.max(0, Math.min(p.e, g.e) - Math.max(p.s, g.s)), uni = Math.max(p.e, g.e) - Math.min(p.s, g.s); if (uni > 0 && inter / uni >= .5) pairs.push([inter / uni, i, j]); }));
+  pairs.sort((x, y) => y[0] - x[0]); const up = new Set(), ug = new Set(), m = new Map();
+  for (const [, i, j] of pairs) if (!up.has(i) && !ug.has(j)) { up.add(i); ug.add(j); m.set(i, j); }
+  return m;
+}
+const hours = T / fps / 3600;
+function metrics(pred) {
+  const m = match(pred, GT), res = {};
+  for (const c of [1, 3, 4]) {
+    let tp = 0; m.forEach((j, i) => { if (pred[i].c === c && GT[j].c === c) tp++; });
+    const np = pred.filter(e => e.c === c).length, ng = GT.filter(e => e.c === c).length;
+    const p = np ? tp / np : 0, r = ng ? tp / ng : 0;
+    res[c] = { f1: p + r ? 2 * p * r / (p + r) : 0, fa: (np - tp) / hours, ng };
+  }
+  let mae = 0, n = 0; m.forEach((j, i) => { mae += Math.abs(pred[i].d - GT[j].d); n++; });
+  res.mae = n ? mae / n : NaN; res.m = m; return res;
+}
+
+const thrEl = document.getElementById("thr"), gapEl = document.getElementById("gap");
+let view = { start: 0, len: 30 * fps }, events = [], ranked = [], activeRow = -1, M = null;
+
+function recompute() {
+  document.getElementById("thrOut").textContent = (+thrEl.value).toFixed(2);
+  document.getElementById("gapOut").textContent = (+gapEl.value).toFixed(2) + " s";
+  events = extract(+thrEl.value, +gapEl.value);
+  M = metrics(events);
+  // xếp hạng mining: chỉ sự kiện >= 0,5 s, thô (không lấp khe) như pipeline
+  const cand = events.map((e, i) => ({ e, i })).filter(o => o.e.d >= .5);
+  const fr = fragScores(events);
+  const sig = { frame_uncertainty: cand.map(o => frameUnc(o.e)), threshold_proximity: cand.map(o => proximity(o.e)), fragmentation: cand.map(o => fr[o.i]) };
+  const R = Object.fromEntries(Object.entries(sig).map(([k, v]) => [k, pct(v)])), W = D.events.weights;
+  ranked = cand.map((o, n) => {
+    const z = Object.keys(W).reduce((a, k) => a + W[k] * R[k][n], D.events.bias);
+    return { ...o, prox: sig.threshold_proximity[n], frag: sig.fragmentation[n], h: 1 / (1 + Math.exp(-z)) };
+  }).sort((a, b) => b.h - a.h);
+  renderMetrics(); renderTable(); drawOverview(); drawDetail();
+}
+function renderMetrics() {
+  const el = document.getElementById("evMetrics");
+  const item = (k, v) => `<div class="metric"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  el.innerHTML = item("F1 ngủ gật", M[1].f1.toFixed(2)) + item("F1 ngủ (≥ 3 s)", M[3].f1.toFixed(2)) +
+    item("Ngủ gật báo sai / giờ", M[1].fa.toFixed(1)) + item("Sai số thời lượng", isNaN(M.mae) ? "–" : M.mae.toFixed(2) + " s") +
+    item("Sự kiện phát hiện", events.length);
+  document.getElementById("evCaption").textContent =
+    `Thử kéo "Lấp khe ngắn" lên 0,2 s: các lần ngủ bị cắt vụn được ghép lại, F1 ngủ tăng. Engine vẫn mining trên bản thô để nhìn thấy những khe đó.`;
+}
+function renderTable() {
+  const tb = document.getElementById("evTable"), m = M.m;
+  tb.innerHTML = ranked.slice(0, 10).map((r, k) => {
+    const j = m.get(r.i), ok = j !== undefined && GT[j].c === r.e.c;
+    const truth = j === undefined ? "không khớp" : ok ? "đúng" : `sai (thật: ${CLS[GT[j].c]})`;
+    const why = r.frag > 0 ? "khe ngắn đổi lớp khi ghép" : r.prox > .3 ? "thời lượng sát ngưỡng" : "xác suất lưỡng lự";
+    const t = r.e.s / fps;
+    return `<tr tabindex="0" data-k="${k}" class="${k === activeRow ? "active" : ""}"><td class="num">${k + 1}</td><td>${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}</td>` +
+      `<td class="num">${r.e.d.toFixed(2)} s</td><td><span class="pill" style="background:${css(CLS_VAR[r.e.c])}">${CLS[r.e.c]}</span></td>` +
+      `<td>${truth}</td><td class="num">${r.prox.toFixed(2)}</td><td class="num">${r.frag.toFixed(2)}</td><td class="num">${r.h.toFixed(2)}</td><td class="why">${why}</td></tr>`;
+  }).join("");
+  tb.querySelectorAll("tr").forEach(tr => {
+    const go = () => { activeRow = +tr.dataset.k; const e = ranked[activeRow].e; focusOn((e.s + e.e) / 2); renderTable(); };
+    tr.addEventListener("click", go); tr.addEventListener("keydown", ev => { if (ev.key === "Enter") go(); });
+  });
+}
+function focusOn(center) { view.start = Math.max(0, Math.min(T - view.len, Math.round(center - view.len / 2))); drawOverview(); drawDetail(); }
+
+function setupCanvas(c) {
+  const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = +c.getAttribute("height");
+  c.width = w * dpr; c.height = h * dpr; c.style.height = h + "px";
+  const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); return [x, w, h];
+}
+function drawOverview() {
+  const c = document.getElementById("overview"), [x, w, h] = setupCanvas(c);
+  x.clearRect(0, 0, w, h);
+  x.fillStyle = css("--rule"); x.fillRect(0, h / 2 - .5, w, 1);
+  for (const e of events) if (e.d >= .5) { x.fillStyle = css(CLS_VAR[e.c]); const px = e.s / T * w; x.fillRect(px, 10, Math.max(2, (e.e - e.s) / T * w), h - 20); }
+  x.strokeStyle = css("--fg"); x.lineWidth = 1.5; x.strokeRect(view.start / T * w, 2, Math.max(3, view.len / T * w), h - 4);
+  x.fillStyle = css("--muted"); x.font = `11px ${css("--font-data")}`;
+  for (let m = 0; m <= 20; m += 5) { const px = m * 60 * fps / T * w; x.fillText(`${m}′`, Math.min(px + 2, w - 20), h - 1); }
+}
+document.getElementById("overview").addEventListener("click", ev => {
+  const r = ev.currentTarget.getBoundingClientRect(); activeRow = -1; focusOn((ev.clientX - r.left) / r.width * T); renderTable();
+});
+function drawDetail() {
+  const c = document.getElementById("detail"), [x, w, h] = setupCanvas(c);
+  const padL = 34, padR = 8, top = 34, bot = h - 40, s = view.start, e = s + view.len;
+  const X = i => padL + (i - s) / view.len * (w - padL - padR), Y = v => bot - v * (bot - top);
+  x.clearRect(0, 0, w, h);
+  x.font = `11px ${css("--font-data")}`; x.fillStyle = css("--muted"); x.strokeStyle = css("--rule"); x.lineWidth = 1;
+  for (const v of [0, .5, 1]) { x.beginPath(); x.moveTo(padL, Y(v)); x.lineTo(w - padR, Y(v)); x.stroke(); x.fillText(v.toFixed(1), 4, Y(v) + 4); }
+  for (let t = Math.ceil(s / fps / 5) * 5; t * fps <= e; t += 5) x.fillText(`${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`, X(t * fps) - 14, h - 4);
+  // sự kiện thật (dải trên)
+  x.fillStyle = css("--gt"); x.fillText("thật", 4, 16);
+  for (const g of GT) if (g.e > s && g.s < e) x.fillRect(X(Math.max(g.s, s)), 8, X(Math.min(g.e, e)) - X(Math.max(g.s, s)), 10);
+  // sự kiện dự đoán (dải dưới)
+  x.fillStyle = css("--muted"); x.fillText("đoán", 4, bot + 22);
+  for (const p of events) if (p.e > s && p.s < e) {
+    x.fillStyle = css(CLS_VAR[p.c]); const a = X(Math.max(p.s, s)), b = X(Math.min(p.e, e));
+    x.fillRect(a, bot + 12, Math.max(1.5, b - a), 12);
+    if (p.d >= .5 && b - a > 30) { x.fillStyle = css("--fg"); x.fillText(p.d.toFixed(2) + "s", a, bot + 34 > h - 14 ? bot + 9 : bot + 34); }
+  }
+  // ngưỡng
+  x.strokeStyle = css("--accent"); x.setLineDash([4, 4]); x.beginPath(); x.moveTo(padL, Y(+thrEl.value)); x.lineTo(w - padR, Y(+thrEl.value)); x.stroke(); x.setLineDash([]);
+  // q(t)
+  x.strokeStyle = css("--line"); x.lineWidth = 1.2; x.beginPath();
+  const step = Math.max(1, Math.floor(view.len / (w * 2)));
+  for (let i = s; i < e; i += step) { const px = X(i), py = Y(q[i]); i === s ? x.moveTo(px, py) : x.lineTo(px, py); }
+  x.stroke();
+  document.getElementById("detailTitle").textContent = `Chi tiết ${fmt(s / fps)}–${fmt(e / fps)} · xác suất nhắm mắt q(t)`;
+}
+const fmt = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+thrEl.addEventListener("input", recompute); gapEl.addEventListener("input", recompute);
+
+/* ---------- thẻ 2: embedding ---------- */
+const C = D.clip; let colorBy = "driver";
+function palette(n) { return Array.from({ length: n }, (_, i) => `hsl(${(i * 360 / n + 10) % 360} 55% ${document.documentElement.matches("[data-theme='dark']") || matchMedia("(prefers-color-scheme: dark)").matches && !document.documentElement.matches("[data-theme='light']") ? 62 : 46}%)`); }
+function drawEmb(id, pts) {
+  const c = document.getElementById(id), [x, w, h] = setupCanvas(c), pad = 10;
+  x.clearRect(0, 0, w, h);
+  const key = colorBy === "driver" ? C.driver : C.label, cols = palette(Math.max(...key) + 1);
+  pts.forEach((p, i) => { x.fillStyle = cols[key[i]]; x.globalAlpha = .7; x.beginPath(); x.arc(pad + p[0] * (w - 2 * pad), pad + (1 - p[1]) * (h - 2 * pad), 2.2, 0, 7); x.fill(); });
+  x.globalAlpha = 1;
+  const st = document.getElementById("strat").value;
+  if (st !== "none") { x.strokeStyle = css("--fg"); x.lineWidth = 1.8;
+    for (const i of C.selected[st]) { const p = pts[i]; x.beginPath(); x.arc(pad + p[0] * (w - 2 * pad), pad + (1 - p[1]) * (h - 2 * pad), 6, 0, 7); x.stroke(); } }
+}
+function drawEmbAll() {
+  drawEmb("embRaw", C.raw); drawEmb("embDeid", C.deid);
+  const st = document.getElementById("strat").value;
+  document.getElementById("embCaption").textContent = (colorBy === "driver"
+    ? "Tô theo tài xế: ở bên trái các cụm là từng người lái; sau khử danh tính các màu trộn lẫn vào nhau. "
+    : "Tô theo hành vi: sau khử danh tính, các cụm hành vi tách rõ hơn vì hướng ngoại hình đã bị chiếu bỏ. ") +
+    (st === "none" ? "" : `Vòng tròn: 30 cửa sổ chiến lược "${st}" chọn ở vòng 1.`);
+}
+for (const [id, v] of [["byDriver", "driver"], ["byClass", "label"]]) document.getElementById(id).addEventListener("click", () => {
+  colorBy = v; document.getElementById("byDriver").setAttribute("aria-pressed", v === "driver"); document.getElementById("byClass").setAttribute("aria-pressed", v === "label"); drawEmbAll();
+});
+document.getElementById("strat").addEventListener("change", drawEmbAll);
+
+/* ---------- thẻ 3: đường cong ---------- */
+const SCOL = { random: "--c-blink", entropy: "--c-buffer", margin_diverse: "--c-micro", hardmine: "--accent" };
+function drawCurves() {
+  const c = document.getElementById("curve"), [x, w, h] = setupCanvas(c), pl = 44, pr = 12, pt = 10, pb = 30;
+  const all = Object.values(C.curves).flat(), xs = all.map(p => p[0]), ys = all.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.floor(Math.min(...ys) * 20) / 20, y1 = Math.ceil(Math.max(...ys) * 20) / 20;
+  const X = v => pl + (v - x0) / (x1 - x0) * (w - pl - pr), Y = v => h - pb - (v - y0) / (y1 - y0) * (h - pt - pb);
+  x.clearRect(0, 0, w, h); x.font = `11px ${css("--font-data")}`;
+  for (let v = y0; v <= y1 + 1e-9; v += .05) { x.strokeStyle = css("--rule"); x.beginPath(); x.moveTo(pl, Y(v)); x.lineTo(w - pr, Y(v)); x.stroke(); x.fillStyle = css("--muted"); x.fillText(v.toFixed(2), 4, Y(v) + 4); }
+  for (const v of [...new Set(xs)]) x.fillText(v, X(v) - 8, h - 12);
+  x.fillText("số nhãn", w - pr - 44, h - 1);
+  for (const [st, pts] of Object.entries(C.curves)) {
+    x.strokeStyle = css(SCOL[st]); x.lineWidth = st === "hardmine" ? 2.4 : 1.6; x.beginPath();
+    pts.forEach((p, i) => i ? x.lineTo(X(p[0]), Y(p[1])) : x.moveTo(X(p[0]), Y(p[1]))); x.stroke();
+    const l = pts[pts.length - 1]; x.fillStyle = css(SCOL[st]); x.beginPath(); x.arc(X(l[0]), Y(l[1]), 3, 0, 7); x.fill();
+  }
+  document.getElementById("curveLegend").innerHTML = Object.keys(C.curves).map(s => `<span><i style="background:var(${SCOL[s]})"></i>${s}</span>`).join("");
+  const b = document.getElementById("bars"), [bx, bw, bh] = setupCanvas(b), names = ["random", "mean_frame_uncertainty", "hardmine_event"];
+  bx.clearRect(0, 0, bw, bh); bx.font = `12px ${css("--font-ui")}`;
+  const lab = 190, rowH = (bh - 20) / 3;
+  names.forEach((n, i) => {
+    const v = D.events.hit_rate[n], y = 4 + i * rowH;
+    bx.fillStyle = css("--muted"); bx.fillText(n, 0, y + rowH / 2 + 4);
+    bx.fillStyle = css(n === "hardmine_event" ? "--accent" : "--c-blink"); bx.fillRect(lab, y + 6, (bw - lab - 50) * v, rowH - 12);
+    bx.fillStyle = css("--fg"); bx.font = `12px ${css("--font-data")}`; bx.fillText((v * 100).toFixed(0) + "%", lab + (bw - lab - 50) * v + 6, y + rowH / 2 + 4); bx.font = `12px ${css("--font-ui")}`;
+  });
+}
+
+/* ---------- thẻ ---------- */
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+function show(id) {
+  tabs.forEach(t => { const on = t.id === id; t.setAttribute("aria-selected", on); document.getElementById(t.getAttribute("aria-controls")).hidden = !on; });
+  redraw(); try { localStorage.setItem("hm-tab", id); } catch (e) {}
+}
+tabs.forEach(t => t.addEventListener("click", () => show(t.id)));
+function redraw() {
+  if (!document.getElementById("p-events").hidden) { drawOverview(); drawDetail(); }
+  if (!document.getElementById("p-emb").hidden) drawEmbAll();
+  if (!document.getElementById("p-curves").hidden) drawCurves();
+}
+window.addEventListener("resize", redraw);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+recompute();
+// mở sẵn sự kiện khó nhất để trang có nội dung ngay khi tải
+if (ranked.length) { activeRow = 0; const e0 = ranked[0].e; focusOn((e0.s + e0.e) / 2); renderTable(); }
+let saved = null; try { saved = localStorage.getItem("hm-tab"); } catch (e) {}
+const hash = location.hash.replace("#", "");
+const start = ["tab-events", "tab-emb", "tab-curves"].includes("tab-" + hash) ? "tab-" + hash : (saved && document.getElementById(saved) ? saved : "tab-events");
+show(start);
+})();
+</script>

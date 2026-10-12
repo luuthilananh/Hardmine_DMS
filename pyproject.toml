@@ -4,12 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hardmine-dms"
-version = "0.0.1"
+version = "0.1.0.dev0"
 description = "Hard-case mining engine for in-cabin driver monitoring video"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
-dependencies = ["numpy>=1.24", "scipy>=1.10", "scikit-learn>=1.3", "pandas>=2.0", "pyarrow>=14", "pyyaml>=6"]
+authors = [{name = "Luu Thi Lan Anh"}]
+keywords = ["driver monitoring", "active learning", "hard example mining", "in-cabin", "euro ncap"]
+license = {text = "MIT"}
+dependencies = ["numpy>=1.24", "scipy>=1.10", "scikit-learn>=1.3", "pandas>=2.0", "pyyaml>=6", "matplotlib>=3.7"]
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]

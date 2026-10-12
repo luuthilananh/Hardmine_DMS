@@ -1,0 +1,16 @@
+strategy,seed,n_events,base_err,errors_found_in_top,total_errors,hit_rate
+random,0,80,0.5125,11,41,0.55
+mean_frame_uncertainty,0,80,0.5125,12,41,0.6
+hardmine_event,0,80,0.5125,20,41,1.0
+random,1,94,0.5319148936170213,11,50,0.55
+mean_frame_uncertainty,1,94,0.5319148936170213,12,50,0.6
+hardmine_event,1,94,0.5319148936170213,20,50,1.0
+random,2,94,0.4787234042553192,10,45,0.5
+mean_frame_uncertainty,2,94,0.4787234042553192,11,45,0.55
+hardmine_event,2,94,0.4787234042553192,20,45,1.0
+random,3,99,0.6767676767676768,15,67,0.75
+mean_frame_uncertainty,3,99,0.6767676767676768,8,67,0.4
+hardmine_event,3,99,0.6767676767676768,20,67,1.0
+random,4,94,0.5,10,47,0.5
+mean_frame_uncertainty,4,94,0.5,5,47,0.25
+hardmine_event,4,94,0.5,20,47,1.0

@@ -28,8 +28,8 @@ dùng cung cấp. File này là hợp đồng kỹ thuật: hình dạng dữ li
 | `split` | str | `train` / `val` / `test` theo split chính thức |
 | `keep` | bool | còn lại sau lọc thô và khử trùng |
 
-Embedding: `cache/features/<dataset>/<backbone>/emb.npy` (float16, hàng khớp thứ tự `window_id` trong
-`index.parquet` cùng thư mục).
+Embedding: `cache/features/<dataset>/<backbone>/emb_<shard>.npy` (float16) + `index.csv` (window_id, shard, row),
+đọc bằng `hardmine.features.extract.load()`.
 
 Tầng sự kiện: `cache/eyes/<dataset>/<session_id>.npz` với `q_true` (uint8 theo frame), `fps`, và sau khi chạy
 model `q_pred` (float16).
