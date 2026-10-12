@@ -1,7 +1,7 @@
 # Tầng clip, MVP. Xem docs/SPEC.md §7.
 run_name: mvp_clip_driveact
 seed: [0, 1, 2]
-dataset: {name: driveact, root: data/driveact, view: nir_front_top, split: [0, 1, 2]}
+dataset: {name: driveact, root: data/driveact, view: a_column_driver, split: [0, 1, 2]}
 windows: {length_s: 2.0, stride_s: 1.0, fps_sample: 8, min_label_frac: 0.6}
 dedup: {phash_tau: 6, semdedup_eps: 0.02}
 backbone: {name: vjepa2_vitl, batch_size: 16, fp16: true}

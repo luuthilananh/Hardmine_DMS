@@ -1,5 +1,6 @@
 data/
-cache/
+cache/*
+!cache/windows/
 *.mp4
 *.npy
 *.npz

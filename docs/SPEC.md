@@ -11,7 +11,7 @@ dùng cung cấp. File này là hợp đồng kỹ thuật: hình dạng dữ li
 
 ## 2. Bảng cửa sổ (data contract)
 
-`cache/windows/<dataset>.parquet`, một dòng một cửa sổ:
+`cache/windows/<dataset>.csv`, một dòng một cửa sổ. File này **được commit** (nhỏ, không chứa ảnh) để Kaggle dùng chung; `video_path` là đường dẫn tương đối so với thư mục gốc dataset:
 
 | cột | kiểu | ý nghĩa |
 |---|---|---|
@@ -19,7 +19,8 @@ dùng cung cấp. File này là hợp đồng kỹ thuật: hình dạng dữ li
 | `dataset` | str | `driveact`, `dmd`, … |
 | `session_id` | str | phiên quay |
 | `driver_id` | str | tài xế (dùng để chia split, khử danh tính) |
-| `view` | str | góc camera, ví dụ `nir_front_top` |
+| `view` | str | góc camera, ví dụ `a_column_driver` |
+| `video_path` | str | đường dẫn video, tương đối so với `data/<dataset>/` |
 | `t_start`, `t_end` | float | giây trong phiên |
 | `frame_start`, `frame_end` | int | chỉ số frame |
 | `label` | int | lớp đa số (−1 nếu không có nhãn) |
@@ -130,7 +131,7 @@ cuối cùng: fit lại, đánh giá test một lần; ghi rounds.csv
 ```yaml
 run_name: mvp_clip_driveact
 seed: [0, 1, 2]
-dataset: {name: driveact, root: data/driveact, view: nir_front_top, split: [0, 1, 2]}
+dataset: {name: driveact, root: data/driveact, view: a_column_driver, split: [0, 1, 2]}
 windows: {length_s: 2.0, stride_s: 1.0, fps_sample: 8, min_label_frac: 0.6}
 backbone: {name: vjepa2_vitl, batch_size: 16, fp16: true}
 deidentify: {rank: 8, class_balanced: false}

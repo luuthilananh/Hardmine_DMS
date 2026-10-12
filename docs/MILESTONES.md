@@ -36,7 +36,7 @@ kế hoạch mục 7) trên đĩa. Nếu thiếu dữ liệu: dừng, báo ngư�
   công thức SPEC §3. Test trên frame tổng hợp.
 - [ ] **P1.4 pHash.** `dedup/phash.py`: pHash 64-bit tự cài (DCT 32×32 → 8×8), khoảng cách Hamming, nhóm
   trùng trong cùng phiên. Test: ảnh dịch 1 pixel có Hamming ≤ 6; ảnh khác hẳn > 20.
-- [ ] **P1.5 Trích đặc trưng.** `features/extract.py` + `scripts/extract_features.py`: backbone cấu hình được,
+- [ ] **P1.5 Trích đặc trưng.** Chạy trên Kaggle GPU theo `docs/GETTING_STARTED.md` bước 5 (người dùng thực hiện); Claude chuẩn bị `cache/windows/driveact.csv` và lệnh. Script đã hỗ trợ `--windows --root`. `features/extract.py` + `scripts/extract_features.py`: backbone cấu hình được,
   ghi `cache/features/<dataset>/<backbone>.npy` (float16) + `index.csv` (đã cài trong `features/extract.py`; cần nối với bảng cửa sổ của Drive&Act). Chạy một lần, có thể tiếp tục
   khi bị ngắt (resume theo chỉ số đã ghi). Đo thông lượng (cửa sổ/giây) trên 1.000 cửa sổ, ghi DECISIONS.md.
 - [ ] **P1.6 Chọn backbone.** So sánh 2–3 backbone bằng linear probe trên val (SPEC §4). Chọn một, ghi lý do.

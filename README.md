@@ -13,7 +13,7 @@ Từ nhiều giờ video cabin chưa gán nhãn, chọn ra đúng những đoạ
 ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-3776ab)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2f6f4f)](LICENSE)
 
-[**Demo tương tác**](https://luuthilananh.github.io/Hardmine_DMS/) · [Kế hoạch nghiên cứu](docs/MILESTONES.md) · [Đặc tả](docs/SPEC.md) · [Luật đánh giá](docs/EVAL_PROTOCOL.md)
+[**Demo tương tác**](https://luuthilananh.github.io/Hardmine_DMS/) · [**Bắt đầu từ đâu**](docs/GETTING_STARTED.md) · [Kế hoạch nghiên cứu](docs/MILESTONES.md) · [Đặc tả](docs/SPEC.md) · [Luật đánh giá](docs/EVAL_PROTOCOL.md)
 
 </div>
 
