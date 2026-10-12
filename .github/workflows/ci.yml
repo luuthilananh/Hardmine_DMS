@@ -26,6 +26,28 @@ jobs:
       - name: Trình chạy test không cần pytest
         run: python tests/run_tests.py
 
+  bootstrap:
+    name: Bootstrap .venv (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Tạo môi trường riêng và chạy test (đúng như AUTOPILOT bước B)
+        shell: bash
+        run: python scripts/bootstrap.py
+      - name: Dùng Python của dự án cho demo nhanh và kiểm tra lệnh tải dữ liệu
+        shell: bash
+        run: |
+          if [ -f .venv/Scripts/python.exe ]; then PY=.venv/Scripts/python.exe; else PY=.venv/bin/python; fi
+          $PY scripts/demo_synthetic.py --quick --no-figures --web ""
+          $PY scripts/download_driveact.py --dry-run --out "$RUNNER_TEMP/driveact"
+
   demo:
     name: Demo đầu-cuối trên dữ liệu tổng hợp
     runs-on: ubuntu-latest

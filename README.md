@@ -55,14 +55,18 @@ flowchart TD
 Bước đắt (trích embedding) chạy đúng một lần; mỗi vòng mining chỉ chạy trên vector nên tính bằng phút.
 Bộ hiệu chuẩn tự học tín hiệu nào thực sự dự báo lỗi ở vòng hiện tại, và tự gán trọng số gần 0 cho tín hiệu vô ích.
 
-## Bắt đầu nhanh (CPU, không cần dữ liệu thật)
+## Bắt đầu nhanh
+
+**Cách tự động (khuyên dùng):** mở [Claude Code](https://code.claude.com/docs/en/overview) trong thư mục repo và gõ
+`Đọc docs/AUTOPILOT.md và làm theo.` — Claude tự tạo môi trường, tải dữ liệu và làm dự án. Xem [Bắt đầu từ đâu](docs/GETTING_STARTED.md).
+
+**Cách thủ công** (môi trường riêng `.venv/` trong thư mục dự án, không đụng Python chung của máy):
 
 ```bash
 git clone https://github.com/luuthilananh/Hardmine_DMS.git
 cd Hardmine_DMS
-pip install -e ".[dev]"
-pytest -q                              # 20+ test, khoảng 10 giây
-python scripts/demo_synthetic.py       # demo đầu-cuối, khoảng 40 giây
+python scripts/bootstrap.py                    # Windows: py -3.11 scripts/bootstrap.py
+.venv/bin/python scripts/demo_synthetic.py     # Windows: .venv\Scripts\python.exe scripts\demo_synthetic.py
 ```
 
 Kết quả vào `results/synthetic_demo/` (CSV, hình, `summary.md`) và dữ liệu cho trang demo vào `demo/data.js`.

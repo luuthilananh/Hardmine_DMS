@@ -9,6 +9,7 @@ Trạng thái hiện tại: **P0 đang làm** (toán lõi, CI, demo tổng hợp
 
 ## P0 — Nền móng (tuần 1)
 
+- [x] **P0.0 Môi trường.** `scripts/bootstrap.py` tạo `.venv/` riêng; `scripts/download_driveact.py`; `docs/AUTOPILOT.md`.
 - [ ] **P0.1 Đóng gói.** `pyproject.toml` cài được bằng `pip install -e ".[dev]"`; `import hardmine` chạy.
   Nghiệm thu: CI xanh trên 3 phiên bản Python (đã có `ci.yml`; chỉ cần xác nhận lần chạy đầu trên GitHub).
 - [ ] **P0.2 Config.** `src/hardmine/config.py`: dataclass đọc YAML (xem SPEC §7). Test đọc `configs/mvp_clip.yaml`.

@@ -3,6 +3,18 @@
 Bạn (Claude) là kỹ sư nghiên cứu chính của dự án này. Đọc hết file này trước khi làm bất cứ việc gì,
 rồi đọc `docs/MILESTONES.md` để biết đang ở giai đoạn nào.
 
+## 0. Môi trường Python của dự án (bắt buộc)
+
+Dự án dùng môi trường riêng `.venv/` trong thư mục repo, tạo bằng `scripts/bootstrap.py`.
+**Mọi lệnh Python gọi thẳng Python của dự án**, không dùng Python hệ thống, không cần activate:
+
+- Windows: `.venv/Scripts/python.exe` (Git Bash) · `.venv\Scripts\python.exe` (PowerShell)
+- macOS/Linux: `.venv/bin/python`
+
+Chưa có `.venv/` → làm theo `docs/AUTOPILOT.md` bước A–B trước. Cài thêm gói: `<python dự án> -m pip install …`
+và ghi phụ thuộc lâu dài vào `pyproject.toml`. Khi người dùng nói "đọc docs/AUTOPILOT.md và làm theo",
+file đó là kịch bản chính của phiên làm việc.
+
 ## 1. Dự án là gì (đọc trong 30 giây)
 
 **HardMine-DMS**: engine khai phá ca khó (hard-case mining) cho dữ liệu video trong cabin, phục vụ
@@ -99,20 +111,23 @@ cách nới ngưỡng hoặc xoá assert mà không ghi lý do có số liệu.
    đặt tên `test_*_slow.py` và tự bỏ qua khi thiếu tài nguyên.
 6. **Mọi baseline dùng cùng backbone, cùng head, cùng ngân sách, cùng tập khởi đầu** với phương pháp đề xuất.
 7. **Báo cáo trung thực kết quả âm tính.** Nếu phương pháp đề xuất không thắng, ghi rõ; không chọn lại seed.
-8. **Không tự xin quyền hay tải dataset có điều khoản.** Dữ liệu do người dùng đặt vào theo `docs/DATA.md`.
-   Nếu thiếu, dừng và nói chính xác cần file nào, đặt ở đâu.
+8. **Không tự xin quyền hay điền form tải dataset.** Ngoại lệ duy nhất: Drive&Act (không cần đăng ký) được tải
+   bằng `scripts/download_driveact.py` **sau khi người dùng đồng ý điều khoản** (AUTOPILOT bước C). Dataset khác
+   cần đăng ký: dừng và nói chính xác cần file nào, đặt ở đâu.
 
 ## 6. Lệnh thường dùng
 
-```bash
-pip install -e ".[dev]"                 # cài gói (thêm [gpu] nếu có GPU)
-python tests/run_tests.py               # chạy toàn bộ test (hoặc: pytest -q)
-python scripts/run_al.py --config configs/mvp_clip.yaml --synthetic     # smoke test đầu-cuối
-python scripts/run_al.py --config configs/mvp_clip.yaml                 # chạy thật
-python scripts/evaluate.py --results results/<run_id>                   # bảng và hình
-```
+`PY` = Python của dự án (mục 0).
 
-Các script trên chưa tồn tại; tạo chúng ở P1–P2 theo SPEC.md.
+```bash
+py -3.11 scripts/bootstrap.py           # tạo/cập nhật .venv và chạy test (Windows; macOS/Linux: python3 …)
+PY tests/run_tests.py                   # chạy toàn bộ test (hoặc: PY -m pytest -q)
+PY scripts/download_driveact.py         # tải Drive&Act (sau khi người dùng đồng ý)
+PY scripts/demo_synthetic.py --quick    # demo đầu-cuối trên dữ liệu tổng hợp
+PY scripts/run_al.py --config configs/mvp_clip.yaml --synthetic     # (tạo ở P2) smoke test đầu-cuối
+PY scripts/run_al.py --config configs/mvp_clip.yaml                 # (tạo ở P2) chạy thật
+PY scripts/evaluate.py --results results/<run_id>                   # (tạo ở P2) bảng và hình
+```
 
 ## 7. Phong cách code
 
