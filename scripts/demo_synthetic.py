@@ -18,6 +18,11 @@ import argparse
 import json
 import pathlib
 import sys
+
+# Cửa sổ dòng lệnh Windows thường dùng cp1252/cp437, không in được tiếng Việt: ép UTF-8.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
 import time
 
 import numpy as np

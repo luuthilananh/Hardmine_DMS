@@ -21,6 +21,11 @@ import os
 import shutil
 import subprocess
 import sys
+
+# Cửa sổ dòng lệnh Windows thường dùng cp1252/cp437, không in được tiếng Việt: ép UTF-8.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
 import venv
 from pathlib import Path
 
@@ -37,7 +42,8 @@ def venv_python() -> Path:
 
 def run(cmd: list[str], **kw) -> None:
     print("  $", " ".join(str(c) for c in cmd), flush=True)
-    subprocess.run([str(c) for c in cmd], check=True, cwd=ROOT, **kw)
+    env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
+    subprocess.run([str(c) for c in cmd], check=True, cwd=ROOT, env=env, **kw)
 
 
 def main() -> int:
@@ -59,7 +65,10 @@ def main() -> int:
         venv.EnvBuilder(with_pip=True, clear=False).create(VENV)
     py = venv_python()
     out = subprocess.run([str(py), "-c", "import sys; print(sys.prefix)"], capture_output=True, text=True, check=True)
-    assert Path(out.stdout.strip()).resolve() == VENV.resolve(), "Python của .venv không trỏ đúng thư mục dự án"
+    same = os.path.normcase(os.path.realpath(out.stdout.strip())) == os.path.normcase(os.path.realpath(VENV))
+    if not same:
+        print(f"Python của .venv trỏ tới {out.stdout.strip()}, không phải {VENV}. Chạy lại với --recreate.")
+        return 1
 
     print("[2/4] Cập nhật pip trong .venv")
     run([py, "-m", "pip", "install", "--upgrade", "--quiet", "pip"])
